@@ -16,6 +16,7 @@ router.use((request, response, next) => {
     next();
 });
 
+//Users Get requests
 router.route('/users').get(async (request, response) => {
     try {
         const result = await dboperations.getusers();
@@ -34,6 +35,50 @@ router.route('/users/:id').get(async (request, response) => {
         response.status(500).json({ error: error.message });
     }
 });
+
+//hardware get requests
+
+router.route('/hardware').get(async (request, response) => {
+    try {
+        const result = await dboperations.gethardwares();
+        response.json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+router.route('/hardware/:id').get(async (request, response) => {
+    try {
+        const id = request.params.id;
+        const user = await dboperations.gethardware(id);
+        response.json(user);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+//get functionn for software
+router.route('/software').get(async (request, response) => {
+    try {
+        const result = await dboperations.getsoftwares();
+        response.json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+router.route('/software/:id').get(async (request, response) => {
+    try {
+        const id = request.params.id;
+        const user = await dboperations.getsoftware(id);
+        response.json(user);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
