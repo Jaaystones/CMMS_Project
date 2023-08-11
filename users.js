@@ -11,4 +11,4 @@ class Users {
     }
 }
 
-export default Users; // Export using ES6 module syntax
+export { Users }; // Export using ES6 module syntax
