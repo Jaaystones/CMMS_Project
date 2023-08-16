@@ -1,5 +1,5 @@
 class Users {
-    constructor(Id, First_name, Last_name, Username, Password, Email, Phone_number, City) {
+    constructor(Id, First_name, Last_name, Username, Password, Email, Phone_number, City, Status) {
         this.Id = Id;
         this.First_name = First_name;
         this.Last_name = Last_name;
@@ -8,6 +8,7 @@ class Users {
         this.Email = Email;
         this.Phone_number = Phone_number;
         this.City = City;
+        this.Status = Status;
     }
 }
 
