@@ -22,7 +22,8 @@ router.use((request, response, next) => {
 router.route('/users').get(async (request, response) => {
     try {
         const result = await db_usersOps.getusers();
-        response.json(result);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -31,8 +32,9 @@ router.route('/users').get(async (request, response) => {
 router.route('/users/:id').get(async (request, response) => {
     try {
         const id = request.params.id;
-        const user = await db_usersOps.getuser(id);
-        response.json(user);
+        const result = await db_usersOps.getuser(id);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -42,7 +44,8 @@ router.route('/users/:id').get(async (request, response) => {
 router.route('/hardware').get(async (request, response) => {
     try {
         const result = await db_hardwareOps.gethardwares();
-        response.json(result);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -51,8 +54,9 @@ router.route('/hardware').get(async (request, response) => {
 router.route('/hardware/:id').get(async (request, response) => {
     try {
         const id = request.params.id;
-        const user = await db_hardwareOps.gethardware(id);
-        response.json(user);
+        const result = await db_hardwareOps.gethardware(id);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -62,7 +66,8 @@ router.route('/hardware/:id').get(async (request, response) => {
 router.route('/software').get(async (request, response) => {
     try {
         const result = await db_softwareOps.getsoftwares();
-        response.json(result);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -71,8 +76,9 @@ router.route('/software').get(async (request, response) => {
 router.route('/software/:id').get(async (request, response) => {
     try {
         const id = request.params.id;
-        const user = await db_softwareOps.getsoftware(id);
-        response.json(user);
+        const result = await db_softwareOps.getsoftware(id);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -111,6 +117,99 @@ router.route('/software').post(async (request, response) => {
         const result = await db_softwareOps.createSoftware(newSoftware);
         response.setHeader('Content-Type', 'application/json');
         response.status(201).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+//Put Requests
+// Users Requests
+router.route('/users/:Id').put(async (request, response) => {
+    try {
+        const idToUpdate = parseInt(request.params.Id, 10);
+        const updatedUserData = { ...request.body};
+        const result = await db_usersOps.updateUser(idToUpdate, updatedUserData);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+
+//Software put request
+router.route('/software/:SwId').put(async (request, response) => {
+    try {
+        const idToUpdate = parseInt(request.params.SwId, 10);
+        const updatedSoftwareData = { ...request.body};
+        const result = await db_softwareOps.updateSoftware(idToUpdate, updatedSoftwareData);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+
+// Hardware put request
+router.route('/hardware/:HwId').put(async (request, response) => {
+    try {
+        const idToUpdate = parseInt(request.params.HwId, 10);
+        const updatedHardwareData = { ...request.body};
+        const result = await db_hardwareOps.updateHardware(idToUpdate, updatedHardwareData);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(201).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+// Delete Requests
+// Deactivate Function for users
+router.route('/users/:id/deactivate').put(async (request, response) => {
+    try {
+        const idToDeactivate = parseInt(request.params.id, 10);
+        const result = await db_usersOps.deactivateUser(idToDeactivate);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(200).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+//Activate Fucvtion for users
+router.route('/users/:id/activate').put(async (request, response) => {
+    try {
+        const idToActivate = parseInt(request.params.id, 10);
+        const result = await db_usersOps.activateUser(idToActivate);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(200).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+
+
+// Delete Function for hardware assets
+router.route('/hardware/:id').delete(async (request, response) => {
+    try {
+        const idToDelete = parseInt(request.params.id, 10);
+        const result = await db_hardwareOps.deleteHardware(idToDelete);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(200).json(result);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+// Deactivate Function for software assets
+router.route('/software/:id').delete(async (request, response) => {
+    try {
+        const idToDelete = parseInt(request.params.id, 10);
+        const result = await db_softwareOps.deleteSoftware(idToDelete);
+        response.setHeader('Content-Type', 'application/json');
+        response.status(200).json(result);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
