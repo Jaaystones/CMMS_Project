@@ -41,10 +41,10 @@ async function createHardware(newHardware) {
         const connection = await createConnection();
         const {
             hwName = "Default Hardware Name",
-            hwDesc = null,
-            purchaseDesc = null,
-            purchaseDate = null,
-            distributor = null
+            hwDesc = "",
+            purchaseDesc = "",
+            purchaseDate = "",
+            distributor = ""
         } = newHardware;
 
         const query = `
@@ -69,4 +69,82 @@ async function createHardware(newHardware) {
     }
 }
 
-export { gethardware, gethardwares, createHardware };
+// Put Function for Hardware
+async function updateHardware(id, updatedColumns) {
+    try {
+        const connection = await createConnection();
+        let query = 'UPDATE Hardware_assets SET ';
+        const values = [];
+
+        if ('HwId' in updatedColumns) {
+            query += 'HwId = ?, ';
+            values.push(updatedColumns.HwId);
+        }
+        if ('hwName' in updatedColumns) {
+            query += 'hwName = ?, ';
+            values.push(updatedColumns.hwName);
+        }
+        if ('hwDesc' in updatedColumns) {
+            query += 'hwDesc = ?, ';
+            values.push(updatedColumns.hwDesc);
+        }
+        if ('purchaseDesc' in updatedColumns) {
+            query += 'purchaseDesc = ?, ';
+            values.push(updatedColumns.purchaseDesc);
+        }
+        if ('purchaseDate' in updatedColumns) {
+            query += 'purchaseDate = ?, ';
+            values.push(updatedColumns.purchaseDate);
+        }
+        if ('distributor' in updatedColumns) {
+            query += 'distributor = ?, ';
+            values.push(updatedColumns.distributor);
+        }
+
+        // Remove trailing comma and space
+        query = query.slice(0, -2);
+
+        query += ' WHERE HwId = ?';
+        values.push(id);
+
+        const [result] = await connection.execute(query, values);
+        connection.end();
+
+        if (result.affectedRows === 0) {
+            throw new Error(`Hardware asset with ID ${id} not found`);
+        }
+
+        return {
+            success: true,
+            message: `Hardware asset with ID ${id} updated successfully`
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while updating hardware asset with ID ${id}`);
+    }
+}
+
+//Delete Hardware
+// Delete Function for Hardware
+async function deleteHardware(id) {
+    try {
+        const connection = await createConnection();
+        const query = 'DELETE FROM Hardware_assets WHERE hwId = ?';
+        const [result] = await connection.execute(query, [id]);
+        connection.end();
+
+        if (result.affectedRows === 0) {
+            throw new Error(`Hardware Assets with ID ${id} not found`);
+        }
+
+        return {
+            success: true,
+            message: `Hardware Assets with ID ${id} deleted successfully`
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while deleting Hardware Assets with ID ${id}`);
+    }
+}
+
+export { gethardware, gethardwares, createHardware, updateHardware, deleteHardware };
