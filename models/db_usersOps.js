@@ -73,7 +73,110 @@ async function createUser(newUser) {
     }
 }
 
+//Put Function for users
+async function updateUser(id, updatedColumns) {
+    try {
+        const connection = await createConnection();
+        let query = 'UPDATE Users_credentials SET ';
+        const values = [];
+
+        if ('First_name' in updatedColumns) {
+            query += 'First_name = ?, ';
+            values.push(updatedColumns.First_name);
+        }
+        if ('Last_name' in updatedColumns) {
+            query += 'Last_name = ?, ';
+            values.push(updatedColumns.Last_name);
+        }
+        if ('Username' in updatedColumns) {
+            query += 'Username = ?, ';
+            values.push(updatedColumns.Username);
+        }
+        if ('Password' in updatedColumns) {
+            query += 'Password = ?, ';
+            values.push(updatedColumns.Password);
+        }
+        if ('Email' in updatedColumns) {
+            query += 'Email = ?, ';
+            values.push(updatedColumns.Email);
+        }
+        if ('Phone_number' in updatedColumns) {
+            query += 'Phone_number = ?, ';
+            values.push(updatedColumns.Phone_number);
+        }
+        if ('City' in updatedColumns) {
+            query += 'City = ?, ';
+            values.push(updatedColumns.City);
+        }
+
+        // Remove trailing comma and space
+        query = query.slice(0, -2);
+
+        query += ' WHERE Id = ?';
+        values.push(id);
+
+        const [result] = await connection.execute(query, values);
+        connection.end();
+
+        if (result.affectedRows === 0) {
+            throw new Error(`User Credentials with ID ${id} not found`);
+        }
+
+        return {
+            success: true,
+            message: `Users Credentials with ID ${id} updated successfully`
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while updating user credentials with ID ${id}`);
+    }
+}
+
+//Activate and Deactivate Users
+// Deactivate Function for users
+async function deactivateUser(id) {
+    try {
+        const connection = await createConnection();
+        const query = 'UPDATE Users_credentials SET Status = ? WHERE Id = ?';
+        const [result] = await connection.execute(query, ['inactive', id]);
+        connection.end();
+
+        if (result.affectedRows === 0) {
+            throw new Error(`User Credentials with ID ${id} not found`);
+        }
+
+        return {
+            success: true,
+            message: `Users Credentials with ID ${id} deactivated successfully`
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while deactivating user credentials with ID ${id}`);
+    }
+}
+// Activate Function
+async function activateUser(id) {
+    try {
+        const connection = await createConnection();
+        const query = 'UPDATE Users_credentials SET Status = ? WHERE Id = ?';
+        const [result] = await connection.execute(query, ['active', id]);
+        connection.end();
+
+        if (result.affectedRows === 0) {
+            throw new Error(`User Credentials with ID ${id} not found`);
+        }
+
+        return {
+            success: true,
+            message: `Users Credentials with ID ${id} has been activated successfully`
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while activating user credentials with ID ${id}`);
+    }
+}
 
 
 
-export { getusers, getuser, createUser };
+
+export { getusers, getuser, createUser, updateUser, deactivateUser, activateUser };
