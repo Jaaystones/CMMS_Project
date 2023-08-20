@@ -9,6 +9,42 @@ async function createConnection() {
     return await mysql.createConnection(connectionConfig);
 }
 
+// Log in a user
+async function loginUser(username, password) {
+    try {
+        const connection = await createConnection();
+        
+        const query = `
+            SELECT Username, Password
+            FROM users_credentials
+            WHERE Username = ?
+        `;
+        
+        const [results] = await connection.execute(query, [username]);
+        connection.end();
+        
+        if (results.length === 0) {
+            throw new Error('User not found');
+        }
+        
+        const storedHashedPassword = results[0].Password;
+        const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
+        
+        if (passwordMatch) {
+            return {
+                success: true,
+                message: 'Login successful',
+                userId: results[0].Username
+            };
+        } else {
+            throw new Error('Invalid password');
+        }
+    } catch (error) {
+        console.error(error);
+        throw new Error('An error occurred during login');
+    }
+}
+
 // Get Functions
 // Function to get Users from the Users_crediential table
 async function getusers() {
@@ -187,4 +223,4 @@ async function activateUser(id) {
 
 
 
-export { getusers, getuser, createUser, updateUser, deactivateUser, activateUser };
+export { getusers, getuser, createUser, updateUser, deactivateUser, activateUser, loginUser };
