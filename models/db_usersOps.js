@@ -1,6 +1,9 @@
 import mysql from 'mysql2/promise';
 import connectionConfig from './dbconfig.js';
 
+// Password encryption
+import bcrypt from 'bcrypt';
+
 //Create a connection
 async function createConnection() {
     return await mysql.createConnection(connectionConfig);
@@ -51,13 +54,17 @@ async function createUser(newUser) {
             City = "value",
         } = newUser;
 
+        // Hash the password
+        const saltRounds = 10; // Number of salt rounds to use
+        const hashedPassword = await bcrypt.hash(Password, saltRounds);
+
         const query = `
             INSERT INTO users_credentials
             (First_name, Last_name, Username, Password, Email, Phone_number, City)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
 
-        const values = [First_name, Last_name, Username, Password, Email, Phone_number, City];
+        const values = [First_name, Last_name, Username, hashedPassword, Email, Phone_number, City];
 
         const [result] = await connection.execute(query, values);
         connection.end();
@@ -69,9 +76,10 @@ async function createUser(newUser) {
         };
     } catch (error) {
         console.error(error);
-        throw new Error('An error occurred while creating new User');
+        throw new Error('An error occurred while creating a new User');
     }
 }
+
 
 //Put Function for users
 async function updateUser(id, updatedColumns) {
