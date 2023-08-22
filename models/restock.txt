@@ -1,0 +1,220 @@
+async function getusers() {
+    try {
+        const connection = await createConnection();
+        const [rows] = await connection.execute("SELECT * FROM users_credentials");
+        connection.end();
+        return rows;
+    } catch (error) {
+        console.error(error);
+        throw new Error("An error occurred while fetching users.");
+    }
+}
+
+async function getuser(id) {
+    try {
+        const connection = await createConnection();
+        const [rows] = await connection.execute("SELECT * FROM users_credentials WHERE id = ?", [id]);
+        connection.end();
+        if (rows.length === 0) {
+            throw new Error(`User with ID ${id} not found`);
+        }
+        return rows[0];
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while fetching user with ID ${id}`);
+    }
+}
+
+// hardware functions
+async function gethardwares() {
+    try {
+        const connection = await createConnection();
+        const [rows] = await connection.execute("SELECT * FROM hardware_assets");
+        connection.end();
+        return rows;
+    } catch (error) {
+        console.error(error);
+        throw new Error("An error occurred while fetching hardware.");
+    }
+}
+
+async function gethardware(id) {
+    try {
+        const connection = await createConnection();
+        const [rows] = await connection.execute("SELECT * FROM hardware_assets WHERE hwId = ?", [id]);
+        connection.end();
+        if (rows.length === 0) {
+            throw new Error(`Hardware with ID ${id} not found`);
+        }
+        return rows[0];
+    } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while fetching hardware with ID ${id}`);
+    }
+}
+
+
+
+//post method for users
+async function createUser(newUser) {
+    try {
+        const connection = await createConnection();
+        const {
+            First_name = "value",
+            Last_name = "value",
+            Username = "value",
+            Password = "value",
+            Email = "value",
+            Phone_number = null,
+            City = "value",
+        } = newUser;
+
+        const query = `
+            INSERT INTO users_credentials
+            (First_name, Last_name, Username, Password, Email, Phone_number, City)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const values = [First_name, Last_name, Username, Password, Email, Phone_number, City];
+
+        const [result] = await connection.execute(query, values);
+        connection.end();
+
+        return {
+            success: true,
+            message: 'New user created successfully',
+            insertedId: result.insertId
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error('An error occurred while creating new User');
+    }
+}
+
+//post method for gethardware
+async function createHardware(newHardware) {
+    try {
+        const connection = await createConnection();
+        const {
+            hwName = "Default Hardware Name",
+            hwDesc = null,
+            purchaseDesc = null,
+            purchaseDate = null,
+            distributor = null
+        } = newHardware;
+
+        const query = `
+            INSERT INTO hardware_assets
+            (hwName, hwDesc, purchaseDesc, purchaseDate, distributor)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+
+        const values = [hwName, hwDesc, purchaseDesc, purchaseDate, distributor];
+
+        const [result] = await connection.execute(query, values);
+        connection.end();
+
+        return {
+            success: true,
+            message: 'Hardware asset created successfully',
+            insertedId: result.insertId
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error('An error occurred while creating hardware asset');
+    }
+}
+
+
+export { getusers, getuser, createUser, gethardwares, gethardware, createHardware }
+
+
+function authenticateJWT(req, res, next) {
+    const token = req.header('Authorization');
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const secretKey = process.env.JWT_SECRET_KEY; // Replace with the secret key used for registration
+    try {
+        const decoded = jwt.verify(token, secretKey);
+        req.userId = decoded.userId;
+        next();
+    } catch (error) {
+        return res.status(403).json({ message: 'Invalid token' });
+    }
+}
+
+export { authenticateJWT };
+
+
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const secretKey = process.env.JWT_SECRET_KEY;
+
+// Create a token
+const payload = { userId: 123 };
+const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
+
+console.log('Token:', token);
+
+// Verify the token
+try {
+  const decoded = jwt.verify(token, secretKey);
+  console.log('Decoded:', decoded);
+} catch (error) {
+  console.error('Verification error:', error.message);
+}
+
+
+const checkToken = async (req, res, next) => {
+  try {
+    const token = req.get("authorization")?.slice(7); // Optional chaining and destructuring
+    if (!token) {
+      throw new Error("Access Denied! Unauthorized User");
+    }
+
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY); // Using async/await
+
+    req.decoded = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({
+      success: 0,
+      message: error.message || "Invalid Token..."
+    });
+  }
+};
+
+
+router.route('/login').post(async (request, response) => {
+    try {
+        const { email, password } = request.body;
+
+        // Fetch user information based on the username
+        const user = await db_usersOps.getusersEmail(email);
+
+        if (!user) {
+            return response.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Now verify the password using bcrypt
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+        if (!isPasswordValid) {
+            return response.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Generate a JWT token
+        const token = jwt.sign({ email: user.Email, password: user.password }, secretKey);
+
+        response.status(200).json({ token });
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+});
+
+

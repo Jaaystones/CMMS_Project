@@ -1,5 +1,8 @@
 import mysql from 'mysql2/promise';
 import connectionConfig from './dbconfig.js';
+//import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Password encryption
 import bcrypt from 'bcrypt';
@@ -7,42 +10,6 @@ import bcrypt from 'bcrypt';
 //Create a connection
 async function createConnection() {
     return await mysql.createConnection(connectionConfig);
-}
-
-// Log in a user
-async function loginUser(username, password) {
-    try {
-        const connection = await createConnection();
-        
-        const query = `
-            SELECT Username, Password
-            FROM users_credentials
-            WHERE Username = ?
-        `;
-        
-        const [results] = await connection.execute(query, [username]);
-        connection.end();
-        
-        if (results.length === 0) {
-            throw new Error('User not found');
-        }
-        
-        const storedHashedPassword = results[0].Password;
-        const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
-        
-        if (passwordMatch) {
-            return {
-                success: true,
-                message: 'Login successful',
-                userId: results[0].Username
-            };
-        } else {
-            throw new Error('Invalid password');
-        }
-    } catch (error) {
-        console.error(error);
-        throw new Error('An error occurred during login');
-    }
 }
 
 // Get Functions
@@ -58,6 +25,21 @@ async function getusers() {
         throw new Error("An error occurred while fetching users.");
     }
 }
+
+async function getusersEmail(email) {
+    try {
+        console.log("Input email:", email); // Add this line for debugging
+        const connection = await createConnection();
+        const [rows] = await connection.execute(`SELECT * FROM users_credentials WHERE Email = ?`, [email]);
+        connection.end();
+        return rows;
+    } catch (error) {
+        console.error(error);
+        throw new Error("An error occurred while fetching users Email.");
+    }
+}
+
+
 
 //Function to retrieve users using their ubique ids
 async function getuser(id) {
@@ -101,21 +83,23 @@ async function createUser(newUser) {
         `;
 
         const values = [First_name, Last_name, Username, hashedPassword, Email, Phone_number, City];
-
         const [result] = await connection.execute(query, values);
+        const payload = { userId: result.insertId };
+        const secretKey = process.env.JWT_SECRET_KEY; // Replace with a secure secret key
+        const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
         connection.end();
 
         return {
             success: true,
             message: 'New user created successfully',
-            insertedId: result.insertId
+            insertedId: result.insertId,
+            token: token
         };
     } catch (error) {
         console.error(error);
         throw new Error('An error occurred while creating a new User');
     }
 }
-
 
 //Put Function for users
 async function updateUser(id, updatedColumns) {
@@ -223,4 +207,4 @@ async function activateUser(id) {
 
 
 
-export { getusers, getuser, createUser, updateUser, deactivateUser, activateUser, loginUser };
+export { getusers, getuser, getusersEmail, createUser, updateUser, deactivateUser, activateUser };
