@@ -1,9 +1,9 @@
 import express from "express";
 import { login, register} from '../models/db_auth.js'
 
-const loginRouter = express.Router;
+const authRouter = express.Router();
 
-loginRouter.post('/register', register)
-loginRouter.post('/login', login)
+authRouter.post('/register', register);
+authRouter.post('/login', login);
 
-export default loginRouter
+export default authRouter

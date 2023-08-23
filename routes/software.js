@@ -1,5 +1,6 @@
 import express from 'express';
 import * as db_softwareOps from '../models/db_softwareOps.js';
+import { checkToken, verifyUser } from '../auth/loginAuth.js';
 
 const softwareRouter = express.Router();
 
@@ -28,7 +29,7 @@ softwareRouter.route('/software/:id').get(async (request, response) => {
 
 
 // Software Post request
-softwareRouter.route('/software').post(async (request, response) => {
+softwareRouter.route('/software').post(verifyUser, async (request, response) => {
     try {
         const newSoftware = { ...request.body };
         const result = await db_softwareOps.createSoftware(newSoftware);
@@ -41,7 +42,7 @@ softwareRouter.route('/software').post(async (request, response) => {
 
 
 //Software put request
-softwareRouter.route('/software/:SwId').put(async (request, response) => {
+softwareRouter.route('/software/:SwId').put(verifyUser, async (request, response) => {
     try {
         const idToUpdate = parseInt(request.params.SwId, 10);
         const updatedSoftwareData = { ...request.body};
@@ -55,7 +56,7 @@ softwareRouter.route('/software/:SwId').put(async (request, response) => {
 
 
 // Deactivate Function for software assets
-softwareRouter.route('/software/:id').delete(async (request, response) => {
+softwareRouter.route('/software/:id').delete(verifyUser, async (request, response) => {
     try {
         const idToDelete = parseInt(request.params.id, 10);
         const result = await db_softwareOps.deleteSoftware(idToDelete);

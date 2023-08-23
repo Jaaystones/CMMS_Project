@@ -1,5 +1,6 @@
 import express from 'express';
 import * as db_hardwareOps from '../models/db_hardwareOps.js';
+import { checkToken, verifyUser } from '../auth/loginAuth.js';
 
 const hardwareRouter = express.Router();
 
@@ -26,7 +27,7 @@ hardwareRouter.route('/hardware/:id').get(async (request, response) => {
 });
 
 // Hardware POST request for creating a new hardware asset
-hardwareRouter.route('/hardware').post(async (request, response) => {
+hardwareRouter.route('/hardware').post(verifyUser, async (request, response) => {
     try {
         const newHardware = { ...request.body };
         const result = await db_hardwareOps.createHardware(newHardware);
@@ -38,7 +39,7 @@ hardwareRouter.route('/hardware').post(async (request, response) => {
 });
 
 // Hardware PUT request for updating hardware
-hardwareRouter.route('/hardware/:HwId').put(async (request, response) => {
+hardwareRouter.route('/hardware/:HwId').put(verifyUser, async (request, response) => {
     try {
         const idToUpdate = parseInt(request.params.HwId, 10);
         const updatedHardwareData = { ...request.body };
@@ -51,7 +52,7 @@ hardwareRouter.route('/hardware/:HwId').put(async (request, response) => {
 });
 
 // Delete Function for hardware assets
-hardwareRouter.route('/hardware/:id').delete(async (request, response) => {
+hardwareRouter.route('/hardware/:id').delete(verifyUser, async (request, response) => {
     try {
         const idToDelete = parseInt(request.params.id, 10);
         const result = await db_hardwareOps.deleteHardware(idToDelete);

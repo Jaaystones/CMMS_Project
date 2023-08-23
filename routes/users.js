@@ -1,10 +1,11 @@
 import express from 'express';
 import * as db_usersOps from '../models/db_usersOps.js';
+import { checkToken, verifyUser } from '../auth/loginAuth.js';
 
 const userRouter = express.Router();
 
 // Get all users
-userRouter.route('/users').get(async (request, response) => {
+userRouter.route('/users').get(checkToken, verifyUser, async (request, response) => {
     try {
         const result = await db_usersOps.getusers();
         response.setHeader('Content-Type', 'application/json');
@@ -15,7 +16,7 @@ userRouter.route('/users').get(async (request, response) => {
 });
 
 // Get a specific user by ID
-userRouter.route('/users/:id').get(async (request, response) => {
+userRouter.route('/users/:id').get(verifyUser, async (request, response) => {
     try {
         const id = request.params.id;
         const result = await db_usersOps.getuser(id);
@@ -27,7 +28,7 @@ userRouter.route('/users/:id').get(async (request, response) => {
 });
 
 // Update a user by ID
-userRouter.route('/users/:Id').put(async (request, response) => {
+userRouter.route('/users/:Id').put(verifyUser, async (request, response) => {
     try {
         const idToUpdate = parseInt(request.params.Id, 10);
         const updatedUserData = { ...request.body };
@@ -40,7 +41,7 @@ userRouter.route('/users/:Id').put(async (request, response) => {
 });
 
 // Create a new user
-userRouter.route('/users').post(async (request, response) => {
+userRouter.route('/users').post(verifyUser, async (request, response) => {
     try {
         const newUser = { ...request.body };
         const result = await db_usersOps.createUser(newUser);
@@ -52,7 +53,7 @@ userRouter.route('/users').post(async (request, response) => {
 });
 
 // Deactivate a user by ID
-userRouter.route('/users/:id/deactivate').put(async (request, response) => {
+userRouter.route('/users/:id/deactivate').put(verifyUser, async (request, response) => {
     try {
         const idToDeactivate = parseInt(request.params.id, 10);
         const result = await db_usersOps.deactivateUser(idToDeactivate);
@@ -64,7 +65,7 @@ userRouter.route('/users/:id/deactivate').put(async (request, response) => {
 });
 
 // Activate a user by ID
-userRouter.route('/users/:id/activate').put(async (request, response) => {
+userRouter.route('/users/:id/activate').put(verifyUser, async (request, response) => {
     try {
         const idToActivate = parseInt(request.params.id, 10);
         const result = await db_usersOps.activateUser(idToActivate);
