@@ -1,11 +1,11 @@
 import mysql from 'mysql2/promise';
 import connectionConfig from './dbconfig.js';
-//import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
 // Password encryption
-import bcrypt from 'bcrypt';
+//import bcrypt from 'bcrypt';
 
 //Create a connection
 async function createConnection() {
@@ -26,16 +26,19 @@ async function getusers() {
     }
 }
 
-async function getusersEmail(email) {
+async function getusersName(Username) {
     try {
-        console.log("Input email:", email); // Add this line for debugging
+        console.log("Input Username:", Username);
         const connection = await createConnection();
-        const [rows] = await connection.execute(`SELECT * FROM users_credentials WHERE Email = ?`, [email]);
-        connection.end();
-        return rows;
+        const [rows] = await connection.execute(`SELECT Username, Password FROM Users_credentials WHERE Username = ?`, [Username]);
+        await connection.end();
+        if (rows.length === 0) {
+            return null; // User not found
+        }
+        return rows[0];
     } catch (error) {
         console.error(error);
-        throw new Error("An error occurred while fetching users Email.");
+        throw new Error("An error occurred while fetching Username and Password.");
     }
 }
 
@@ -59,7 +62,7 @@ async function getuser(id) {
 
 //Post Functions
 //post function for users
-async function createUser(newUser) {
+async function createUser(newUser, connection) {
     try {
         const connection = await createConnection();
         const {
@@ -72,18 +75,16 @@ async function createUser(newUser) {
             City = "value",
         } = newUser;
 
-        // Hash the password
-        const saltRounds = 10; // Number of salt rounds to use
-        const hashedPassword = await bcrypt.hash(Password, saltRounds);
-
         const query = `
             INSERT INTO users_credentials
             (First_name, Last_name, Username, Password, Email, Phone_number, City)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
 
-        const values = [First_name, Last_name, Username, hashedPassword, Email, Phone_number, City];
+        const values = [First_name, Last_name, Username, Password, Email, Phone_number, City];
         const [result] = await connection.execute(query, values);
+
+        //tokens
         const payload = { userId: result.insertId };
         const secretKey = process.env.JWT_SECRET_KEY; // Replace with a secure secret key
         const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
@@ -207,4 +208,4 @@ async function activateUser(id) {
 
 
 
-export { getusers, getuser, getusersEmail, createUser, updateUser, deactivateUser, activateUser };
+export { getusers, getuser, getusersName, createUser, updateUser, deactivateUser, activateUser };
