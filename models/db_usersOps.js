@@ -2,6 +2,7 @@ import mysql from 'mysql2/promise';
 import connectionConfig from './dbconfig.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 dotenv.config();
 
 // Password encryption
@@ -122,8 +123,10 @@ async function updateUser(id, updatedColumns) {
             values.push(updatedColumns.Username);
         }
         if ('Password' in updatedColumns) {
+            const salt = bcrypt.genSaltSync(10);
+            const hash = bcrypt.hashSync(updatedColumns.Password, salt);
             query += 'Password = ?, ';
-            values.push(updatedColumns.Password);
+            values.push(hash);
         }
         if ('Email' in updatedColumns) {
             query += 'Email = ?, ';
