@@ -12,6 +12,7 @@ async function createConnection() {
   return await mysql.createConnection(connectionConfig);
 }
 
+//create hardware
 const register = async (req, res, next) => {
   try {
     const connection = await createConnection();
