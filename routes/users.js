@@ -28,6 +28,7 @@ userRouter.route('/users/:id').get(verifyUser, async (request, response) => {
 });
 
 // Update a user by ID
+// the update func has be created in auth to hash passwords
 userRouter.route('/users/:Id').put(verifyUser, async (request, response) => {
     try {
         const idToUpdate = parseInt(request.params.Id, 10);
