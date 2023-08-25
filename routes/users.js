@@ -42,16 +42,16 @@ userRouter.route('/users/:Id').put(verifyUser, async (request, response) => {
 });
 
 // Create a new user
-userRouter.route('/users').post(verifyUser, async (request, response) => {
-    try {
-        const newUser = { ...request.body };
-        const result = await db_usersOps.createUser(newUser);
-        response.setHeader('Content-Type', 'application/json');
-        response.status(201).json(result); // Use 201 for successful POST requests
-    } catch (error) {
-        response.status(500).json({ error: error.message });
-    }
-});
+//userRouter.route('/users').post(verifyUser, async (request, response) => {
+//    try {
+//        const newUser = { ...request.body };
+//       const result = await db_usersOps.createUser(newUser);
+//        response.setHeader('Content-Type', 'application/json');
+//        response.status(201).json(result); // Use 201 for successful POST requests
+//    } catch (error) {
+//        response.status(500).json({ error: error.message });
+//    }
+//});
 
 // Deactivate a user by ID
 userRouter.route('/users/:id/deactivate').put(verifyUser, async (request, response) => {
